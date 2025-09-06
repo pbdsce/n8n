@@ -1,0 +1,415 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Grab the raw AI output string\nlet raw = $input.first().json.output;\n\n// Clean up in case AI wrapped it in triple backticks\nraw = raw.replace(/```json\\n?/, '').replace(/```$/, '').trim();\n\n// Parse into an object\nconst posts = JSON.parse(raw);\n\n// Return separate items\nreturn [\n  { json: { platform: \"twitter\", post: posts.twitter } },\n  { json: { platform: \"linkedin\", post: posts.linkedin } },\n  { json: { platform: \"instagram\", post: posts.instagram } },\n  \n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1536,
+        0
+      ],
+      "id": "8f0d4bbc-5381-461f-9f8f-237cea0c3612",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        208
+      ],
+      "id": "687d5d05-169a-4096-9011-bcbec8be25e9",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "fa5z3alVNE2b4iZP",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a social media content creator.  \nGenerate engaging posts celebrating an **achievement**.  \n\nInputs:  \n{{ $('AI Agent').item.json.output }}\n\n🔹 Instructions:\n1. Return results in **JSON format only** with three keys: `twitter`, `linkedin`, and `instagram`.  \n2. Each key must contain the post text **tailored for that platform**.  \n\n   - **Twitter**: punchy, max 140 chars, use 3-5 trending hashtags.  \n   - **LinkedIn**: professional, inspiring, max 150 chars, hashtags at the end (5-7 relevant).  \n   - **Instagram**: friendly, motivational, include emojis max 160 chars and 8-12 trending hashtags.  \n\n3. Always mention both **achievement** and **area of achievement**.  \n4. Suggest **trending hashtags** relevant to the context.  \n5. Output should be **valid JSON only** in this structure:\n\n```json\n{\n  \"twitter\": \"string\",\n  \"linkedin\": \"string\",\n  \"instagram\": \"string\"\n}\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1168,
+        32
+      ],
+      "id": "34a1d19d-11da-4b5d-92b7-2d81b7078bf5",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "12Gl-LE-uxfONjGh9M-bPEH-subo5FEIuDViC2ea93d8",
+          "mode": "list",
+          "cachedResultName": "n8n test",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12Gl-LE-uxfONjGh9M-bPEH-subo5FEIuDViC2ea93d8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12Gl-LE-uxfONjGh9M-bPEH-subo5FEIuDViC2ea93d8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "submittedAt": "={{ $('On form submission').item.json.submittedAt }}",
+            "Achievement": "={{ $json.achievement }}",
+            "Social_media": "={{ $('On form submission').item.json['to go on socials or just doc'] }}",
+            "What_is_the_Achievement": "={{ $('On form submission').item.json['What is the Achievement'] }}",
+            "What_is_the_category_of_the_achievement": "={{ $('On form submission').item.json['What is the category of the achivement?'] }}",
+            "What_is_the_date_of_achievement": "={{ $('On form submission').item.json['What is the date of achivement?'] }}",
+            "Image_of_achievement": "={{ $('On form submission').item.json.Image[0].filename }}",
+            "to_go_on_socials_or_just_doc": "={{ $('On form submission').item.json['to go on socials or just doc'] }}",
+            "Name": "={{ $json.name }}"
+          },
+          "matchingColumns": [
+            "What_is_the_Achievement"
+          ],
+          "schema": [
+            {
+              "id": "Achievement",
+              "displayName": "Achievement",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Social_media",
+              "displayName": "Social_media",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "What_is_the_Achievement",
+              "displayName": "What_is_the_Achievement",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "What_is_the_category_of_the_achievement",
+              "displayName": "What_is_the_category_of_the_achievement",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "What_is_the_date_of_achievement",
+              "displayName": "What_is_the_date_of_achievement",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Image_of_achievement",
+              "displayName": "Image_of_achievement",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "to_go_on_socials_or_just_doc",
+              "displayName": "to_go_on_socials_or_just_doc",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "submittedAt",
+              "displayName": "submittedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        928,
+        16
+      ],
+      "id": "91f79b81-f58e-4c18-8cce-d569af67db2b",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "iE3WiITCoxeg7x99",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        304,
+        256
+      ],
+      "id": "810c33d5-80b5-40b8-958e-bc739d756449",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "fa5z3alVNE2b4iZP",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a social media content generator.  \n\nInstructions:  \n1. From the input achievement text, extract the person's **name** and a simplified version of the **achievement**.  \n   Example: \"Ayush Singh cracked lfx in postgres\" → name = \"Ayush Singh\", achievement = \"LFX in Postgres\".  \n\n2. Generate engaging posts for Twitter, LinkedIn, and Instagram. Always mention both **name** and **achievement**, along with the area of achievement.  \n\n3. Rules per platform:  \n   - Twitter: Punchy, max 280 chars, 3–5 trending hashtags.  \n   - LinkedIn: Professional, inspiring, 2–3 short paragraphs, end with 5–7 hashtags.  \n   - Instagram: Friendly, motivational, emojis, 8–12 trending hashtags.  \n\n4. Output format:  \nReturn only valid JSON in the following structure:  \n\n{\n  \"name\": \"Extracted person's name\",\n  \"achievement\": \"Simplified achievement\",\n  \"twitter\": \"Post text for Twitter\",\n  \"linkedin\": \"Post text for LinkedIn\",\n  \"instagram\": \"Post text for Instagram\"\n}\n\nReturn only raw JSON without code blocks or backticks.  \n\n---  \n\n### Input Achievement Text:  \n{{ $json['What is the Achievement'] }}\n### Input Category\n{{ $json['What is the category of the achivement?'] }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        336,
+        16
+      ],
+      "id": "9662e9df-d20d-4523-bd8e-d6bc44f95b54",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "formTitle": "PB social media post and Doc update",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "What is the Achievement",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "What is the category of the achivement?",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "What is the date of achivement?",
+              "fieldType": "date",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Image",
+              "fieldType": "file",
+              "acceptFileTypes": ".jpg"
+            },
+            {
+              "fieldLabel": "to go on socials or just doc",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Yes"
+                  },
+                  {
+                    "option": "No"
+                  }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "customCss": ":root {\n\t--font-family: 'Open Sans', sans-serif;\n\t--font-weight-normal: 400;\n\t--font-weight-bold: 600;\n\t--font-size-body: 12px;\n\t--font-size-label: 14px;\n\t--font-size-test-notice: 12px;\n\t--font-size-input: 14px;\n\t--font-size-header: 20px;\n\t--font-size-paragraph: 14px;\n\t--font-size-link: 12px;\n\t--font-size-error: 12px;\n\t--font-size-html-h1: 28px;\n\t--font-size-html-h2: 20px;\n\t--font-size-html-h3: 16px;\n\t--font-size-html-h4: 14px;\n\t--font-size-html-h5: 12px;\n\t--font-size-html-h6: 10px;\n\t--font-size-subheader: 14px;\n\n\t/* Colors */\n\t--color-background: #fbfcfe;\n\t--color-test-notice-text: #e6a23d;\n\t--color-test-notice-bg: #fefaf6;\n\t--color-test-notice-border: #f6dcb7;\n\t--color-card-bg: #ffffff;\n\t--color-card-border: #dbdfe7;\n\t--color-card-shadow: rgba(99, 77, 255, 0.06);\n\t--color-link: #7e8186;\n\t--color-header: #525356;\n\t--color-label: #555555;\n\t--color-input-border: #dbdfe7;\n\t--color-input-text: #71747A;\n\t--color-focus-border: rgb(90, 76, 194);\n\t--color-submit-btn-bg: #ff6d5a;\n\t--color-submit-btn-text: #ffffff;\n\t--color-error: #ea1f30;\n\t--color-required: #ff6d5a;\n\t--color-clear-button-bg: #7e8186;\n\t--color-html-text: #555;\n\t--color-html-link: #ff6d5a;\n\t--color-header-subtext: #7e8186;\n\n\t/* Border Radii */\n\t--border-radius-card: 8px;\n\t--border-radius-input: 6px;\n\t--border-radius-clear-btn: 50%;\n\t--card-border-radius: 8px;\n\n\t/* Spacing */\n\t--padding-container-top: 24px;\n\t--padding-card: 24px;\n\t--padding-test-notice-vertical: 12px;\n\t--padding-test-notice-horizontal: 24px;\n\t--margin-bottom-card: 16px;\n\t--padding-form-input: 12px;\n\t--card-padding: 24px;\n\t--card-margin-bottom: 16px;\n\n\t/* Dimensions */\n\t--container-width: 448px;\n\t--submit-btn-height: 48px;\n\t--checkbox-size: 18px;\n\n\t/* Others */\n\t--box-shadow-card: 0px 4px 16px 0px var(--color-card-shadow);\n\t--opacity-placeholder: 0.5;\n}"
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        32,
+        0
+      ],
+      "id": "50fc54a8-13e7-4f25-9121-d48c4b10aee8",
+      "name": "On form submission",
+      "webhookId": "34008d3d-98c5-4ace-873b-4b9557a1550b"
+    },
+    {
+      "parameters": {
+        "sendTo": "ayushayush9415272949@gmail.com",
+        "subject": "Helllo world",
+        "message": "={{ $json.post }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1744,
+        0
+      ],
+      "id": "76c5b858-48b8-4558-a63f-76e8b9287bfc",
+      "name": "Send a message",
+      "webhookId": "a4554bd9-e076-4b2a-9eca-ea9bf1cc23bb",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "INDmyXIMGaPnpDnL",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json[\"output\"]; // or whatever field contains the AI response\n\n// Remove ```json and ``` if present\nconst cleaned = raw.replace(/```json|```/g, \"\").trim();\n\n// Parse it into real JSON\nreturn JSON.parse(cleaned);\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        16
+      ],
+      "id": "e5730f84-992e-4fc9-b152-f07d88774699",
+      "name": "Code1"
+    }
+  ],
+  "connections": {
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3756fcbdbf32737563a07d81f0c37f2b4db5c631b20a1fc24dd909f887863ac6"
+  }
+}
