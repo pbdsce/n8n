@@ -1,4 +1,4 @@
-Team Achievements Email Automation Workflow
+#Team Achievements Email Automation Workflow
 This repository contains an n8n workflow that automates the creation and distribution of a monthly team achievements email. It pulls data from a Google Sheet, filters achievements from the last 5 months, generates an HTML email using Google Gemini, sends it for approval via Gmail, and handles improvisation feedback before final distribution.
 Features
 
