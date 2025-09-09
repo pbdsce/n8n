@@ -1,0 +1,786 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f21cf6f3-b3ef-419d-9035-dcacd9f4ac3b",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Code node in n8n\n// Storing all the IDs (separated individually)\nconst sihIDs = [\n  \"SIH25001\",\n  \"SIH25002\",\n  \"SIH25013\",\n  \"SIH25018\",\n  \"SIH25022\",\n  \"SIH25026\",\n  \"SIH25027\",\n  \"SIH25032\",\n  \"SIH25040\",\n  \"SIH25042\",\n  \"SIH25066\",\n  \"SIH25070\",\n  \"SIH25071\",\n  \"SIH25073\",\n  \"SIH25080\",\n  \"SIH25081\",\n  \"SIH25099\",\n  \"SIH25100\",\n  \"SIH12507\",\n  \"SIH12508\",\n  \"SIH25134\",\n  \"SIH25135\",\n  \"SIH25136\",\n  \"SIH25138\",\n  \"SIH25139\",\n  \"SIH25141\",\n  \"SIH25142\",\n  \"SIH25025\",\n  \"SIH25051\",\n  \"SIH25054\",\n  \"SIH25062\",\n  \"SIH25063\",\n  \"SIH25072\",\n  \"SIH25077\",\n  \"SIH25109\",\n  \"SIH25110\",\n  \"SIH25111\",\n  \"SIH25112\",\n  \"SIH25113\",\n  \"SIH25114\",\n  \"SIH25115\",\n  \"SIH25116\",\n  \"SIH25117\",\n  \"SIH25118\",\n  \"SIH25119\",\n  \"SIH25120\",\n  \"SIH25121\",\n  \"SIH25122\",\n  \"SIH25123\",\n  \"SIH25124\",\n  \"SIH25125\"\n];\n\n// Return as n8n output\nreturn [\n  {\n    json: {\n      sihIDs\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "cf24bf52-7942-4012-adb7-ab920c40ca91",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "url": "https://www.sih.gov.in/sih2025PS",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "d77ad992-e7cf-4f97-8f5f-807819ee1cf3",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = items[0].json.data;\n\n// Match every <td>...</td>\nconst tdRegex = /<td>(.*?)<\\/td>/g;\nlet match;\nconst allCells = [];\n\n// List of specific PS IDs to extract\nconst targetPsIds = [\n  'SIH25001', 'SIH25002', 'SIH25013', 'SIH25018', 'SIH25022', 'SIH25026',\n  'SIH25027', 'SIH25032', 'SIH25040', 'SIH25042', 'SIH25066', 'SIH25070',\n  'SIH25071', 'SIH25073', 'SIH25080', 'SIH25081', 'SIH25099', 'SIH25100',\n  'SIH12507', 'SIH12508', 'SIH25134', 'SIH25135', 'SIH25136', 'SIH25138',\n  'SIH25139', 'SIH25141', 'SIH25142', 'SIH25025', 'SIH25051', 'SIH25054',\n  'SIH25062', 'SIH25063', 'SIH25072', 'SIH25077', 'SIH25109', 'SIH25110',\n  'SIH25111', 'SIH25112', 'SIH25113', 'SIH25114', 'SIH25115', 'SIH25116',\n  'SIH25117', 'SIH25118', 'SIH25119', 'SIH25120', 'SIH25121', 'SIH25122',\n  'SIH25123', 'SIH25124', 'SIH25125'\n];\n\n// Collect all cell contents\nwhile ((match = tdRegex.exec(html)) !== null) {\n  const cellContent = match[1]\n    .replace(/<[^>]+>/g, '')   // Remove any nested tags\n    .replace(/&[^;]+;/g, '')   // Remove HTML entities\n    .trim();\n\n  if (cellContent) {\n    allCells.push(cellContent);\n  }\n}\n\nconst results = [];\n\n// Process cells and extract submission counts\nfor (let i = 0; i < allCells.length; i++) {\n  if (targetPsIds.includes(allCells[i])) {\n  \n\n    // Look ahead in the next 3 cells for a number\n    for (let j = i + 1; j < Math.min(i + 4, allCells.length); j++) {\n      if (/^\\d+$/.test(allCells[j])) {\n        submissions = allCells[j];\n        break;\n      }\n    }\n\n    results.push({\n      psId: allCells[i],\n      submissions\n    });\n  }\n}\n\n// Output in n8n format\n// Return as a single item containing an array\nreturn [\n  {\n    json: {\n      results\n    }\n  }\n];\n;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        608,
+        0
+      ],
+      "id": "acec5ace-ce16-4aca-bcbe-fec97681afde",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1kOoQVXD0cvnSQRPnROmLamjtQ_ciLoBb7Za-6Sb0yFY",
+          "mode": "list",
+          "cachedResultName": "Sih ps update",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kOoQVXD0cvnSQRPnROmLamjtQ_ciLoBb7Za-6Sb0yFY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kOoQVXD0cvnSQRPnROmLamjtQ_ciLoBb7Za-6Sb0yFY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "SIH25001": "={{ $json.results[0].submissions }}",
+            "SIH25002": "={{ $json.results[1].submissions }}",
+            "SIH25013": "={{ $json.results[2].submissions }}",
+            "SIH25018": "={{ $json.results[3].submissions }}",
+            "SIH25022": "={{ $json.results[4].submissions }}",
+            "SIH25027": "={{ $json.results[7].submissions }}",
+            "SIH25026": "={{ $json.results[6].submissions }}",
+            "SIH25032": "={{ $json.results[8].submissions }}",
+            "SIH25040": "={{ $json.results[9].submissions }}",
+            "SIH25042": "={{ $json.results[10].submissions }}",
+            "SIH25066": "={{ $json.results[15].submissions }}",
+            "SIH25070": "={{ $json.results[16].submissions }}",
+            "SIH25071": "={{ $json.results[17].submissions }}",
+            "SIH25073": "={{ $json.results[19].submissions }}",
+            "SIH25080": "={{ $json.results[21].submissions }}",
+            "SIH25099": "={{ $json.results[23].submissions }}",
+            "SIH25081": "={{ $json.results[22].submissions }}",
+            "SIH25100": "={{ $json.results[24].submissions }}",
+            "SIH12507": "={{ $json.results[25].submissions }}",
+            "SIH12508": "={{ $json.results[26].submissions }}",
+            "SIH25134": "={{ $json.results[44].submissions }}",
+            "SIH25135": "={{ $json.results[45].submissions }}",
+            "SIH25136": "={{ $json.results[46].submissions }}",
+            "SIH25138": "={{ $json.results[47].submissions }}",
+            "SIH25139": "={{ $json.results[48].submissions }}",
+            "SIH25141": "={{ $json.results[49].submissions }}",
+            "SIH25142": "={{ $json.results[50].submissions}}",
+            "SIH25025": "={{ $json.results[5].submissions }}",
+            "SIH25051": "={{ $json.results[11].submissions}}",
+            "SIH25054": "={{ $json.results[12].submissions }}",
+            "SIH25062": "={{ $json.results[13].submissions }}",
+            "SIH25063": "={{ $json.results[14].submissions}}",
+            "SIH25072": "={{ $json.results[18].submissions }}",
+            "SIH25077": "={{ $json.results[20].submissions }}",
+            "SIH25109": "={{ $json.results[27].submissions }}",
+            "SIH25110": "={{ $json.results[28].submissions }}",
+            "SIH25111": "={{ $json.results[29].submissions }}",
+            "SIH25112": "={{ $json.results[30].submissions }}",
+            "SIH25113": "={{ $json.results[31].submissions }}",
+            "SIH25114": "={{ $json.results[32].submissions }}",
+            "SIH25115": "={{ $json.results[33].submissions }}",
+            "SIH25116": "={{ $json.results[34].submissions }}",
+            "SIH25117": "={{ $json.results[35].submissions }}",
+            "SIH25118": "={{ $json.results[36].submissions }}",
+            "SIH25119": "={{ $json.results[37].submissions }}",
+            "SIH25120": "={{ $json.results[38].submissions }}",
+            "SIH25121": "={{ $json.results[39].submissions }}",
+            "SIH25122": "={{ $json.results[40].submissions }}",
+            "SIH25123": "={{ $json.results[41].submissions }}",
+            "SIH25124": "={{ $json.results[42].submissions }}",
+            "SIH25125": "={{ $json.results[43].submissions }}"
+          },
+          "matchingColumns": [
+            "SIH25001"
+          ],
+          "schema": [
+            {
+              "id": "SIH25001",
+              "displayName": "SIH25001",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "SIH25002",
+              "displayName": "SIH25002",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25013",
+              "displayName": "SIH25013",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25018",
+              "displayName": "SIH25018",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25022",
+              "displayName": "SIH25022",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25026",
+              "displayName": "SIH25026",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25027",
+              "displayName": "SIH25027",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25032",
+              "displayName": "SIH25032",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25040",
+              "displayName": "SIH25040",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25042",
+              "displayName": "SIH25042",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25066",
+              "displayName": "SIH25066",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25070",
+              "displayName": "SIH25070",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25071",
+              "displayName": "SIH25071",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25073",
+              "displayName": "SIH25073",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25080",
+              "displayName": "SIH25080",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25081",
+              "displayName": "SIH25081",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25099",
+              "displayName": "SIH25099",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25100",
+              "displayName": "SIH25100",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH12507",
+              "displayName": "SIH12507",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH12508",
+              "displayName": "SIH12508",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25134",
+              "displayName": "SIH25134",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25135",
+              "displayName": "SIH25135",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25136",
+              "displayName": "SIH25136",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25138",
+              "displayName": "SIH25138",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25139",
+              "displayName": "SIH25139",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25141",
+              "displayName": "SIH25141",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25142",
+              "displayName": "SIH25142",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25025",
+              "displayName": "SIH25025",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25051",
+              "displayName": "SIH25051",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25054",
+              "displayName": "SIH25054",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25062",
+              "displayName": "SIH25062",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25063",
+              "displayName": "SIH25063",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25072",
+              "displayName": "SIH25072",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25077",
+              "displayName": "SIH25077",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25109",
+              "displayName": "SIH25109",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25110",
+              "displayName": "SIH25110",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25111",
+              "displayName": "SIH25111",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25112",
+              "displayName": "SIH25112",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25113",
+              "displayName": "SIH25113",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25114",
+              "displayName": "SIH25114",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25115",
+              "displayName": "SIH25115",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25116",
+              "displayName": "SIH25116",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25117",
+              "displayName": "SIH25117",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25118",
+              "displayName": "SIH25118",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25119",
+              "displayName": "SIH25119",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25120",
+              "displayName": "SIH25120",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25121",
+              "displayName": "SIH25121",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25122",
+              "displayName": "SIH25122",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25123",
+              "displayName": "SIH25123",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25124",
+              "displayName": "SIH25124",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SIH25125",
+              "displayName": "SIH25125",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        848,
+        0
+      ],
+      "id": "7655bc07-1215-43d4-81ee-b0b1c141d95d",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "iE3WiITCoxeg7x99",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "ashutosh@compilertech.org",
+        "subject": "Sih Ps update",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1632,
+        0
+      ],
+      "id": "43f3729b-9c98-4a74-a432-e90db0da6247",
+      "name": "Send a message",
+      "webhookId": "1c173aa0-f4e3-4dfb-9999-3d3649476a4b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "INDmyXIMGaPnpDnL",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Generate an email t be sent regarding this sih ps update format the email so that it is easy to read and interpreted prperly use html and no extra data just stick to the point and tell it will be sent again in the next 6 hours.for formating content for data plz refer: {{ $json.results }}\nfrom Ayush\nfor date and time use {{ $now }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1264,
+        0
+      ],
+      "id": "70c71095-a423-472a-bbcf-d1176ce22f04",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1136,
+        208
+      ],
+      "id": "0987adb2-9c28-4646-a097-5f9dc34afc42",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "fa5z3alVNE2b4iZP",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Grab the array from the incoming JSON\nconst data = $json; \n\n// Pretty print\nconst readableData = JSON.stringify(data, null, 2);\n\nreturn [\n  {\n    json: {\n      results: readableData\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1056,
+        0
+      ],
+      "id": "2173d748-91e2-407c-8c55-253e1a3cc5de",
+      "name": "Code2"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3756fcbdbf32737563a07d81f0c37f2b4db5c631b20a1fc24dd909f887863ac6"
+  }
+}
